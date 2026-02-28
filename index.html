@@ -14,6 +14,7 @@
             --ios-accent-color: #FFCC00;
             --ios-separator-color: #C6C6C8;
             --ios-filter-bg: #E5E5EA;
+            --ios-red: #FF3B30;
             --ios-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
@@ -62,11 +63,10 @@
             flex: 1;
             overflow-y: auto;
             padding: 16px;
-            padding-bottom: 100px; /* Отступ снизу, чтобы форма не перекрывала квесты */
+            padding-bottom: 100px; 
             -webkit-overflow-scrolling: touch; 
         }
 
-        /* Блок уровня с кнопкой Лор */
         .level-header {
             display: flex;
             justify-content: space-between;
@@ -164,6 +164,7 @@
             align-items: center;
             padding: 12px 16px;
             border-bottom: 0.5px solid var(--ios-separator-color); 
+            position: relative;
         }
 
         .quest-item:last-child { border-bottom: none; }
@@ -195,11 +196,13 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            cursor: pointer;
         }
 
         .quest-text {
             font-size: 17px;
             transition: color 0.2s ease;
+            padding-right: 8px;
         }
         
         .quest-item.completed .quest-text {
@@ -210,7 +213,7 @@
         .quest-meta {
             display: flex;
             align-items: center;
-            margin-top: 2px;
+            margin-top: 4px;
         }
 
         .quest-category-label {
@@ -228,14 +231,31 @@
             font-weight: 500;
         }
 
-        /* ИСПРАВЛЕННАЯ ФОРМА ДОБАВЛЕНИЯ */
+        /* Кнопка удаления */
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--ios-secondary-text);
+            padding: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+        .delete-btn:hover, .delete-btn:active {
+            opacity: 1;
+            color: var(--ios-red);
+        }
+
+        /* НОВАЯ ФОРМА ДОБАВЛЕНИЯ (Минимализм) */
         .add-quest-form {
             background-color: rgba(242, 242, 247, 0.95);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             padding: 12px 16px;
-            /* Поднял форму выше, чтобы не конфликтовала с полоской айфона */
-            padding-bottom: calc(24px + env(safe-area-inset-bottom)); 
+            padding-bottom: calc(16px + env(safe-area-inset-bottom)); 
             display: flex;
             align-items: center;
             border-top: 0.5px solid var(--ios-separator-color);
@@ -246,61 +266,33 @@
             z-index: 50;
         }
 
-        .add-controls {
-            display: none; 
-            flex-grow: 1;
-            align-items: center;
-            margin-left: 12px;
-        }
-
-        .add-input {
+        .add-input-permanent {
             flex-grow: 1;
             border: none;
-            font-size: 17px; /* 16px+ предотвращает автозум на iOS */
+            font-size: 17px; 
             outline: none;
-            background: transparent; 
+            background: var(--ios-card-bg); 
+            padding: 10px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--ios-separator-color);
         }
 
-        .category-select {
-            border: none;
-            background: var(--ios-filter-bg);
-            color: var(--ios-text-color);
-            font-size: 13px;
-            padding: 6px 8px;
-            border-radius: 6px;
-            margin-right: 8px;
-            outline: none;
-            appearance: none;
-            -webkit-appearance: none;
-        }
-        
-        .add-xp-input {
-            width: 45px;
-            text-align: right;
-            border: none;
-            font-size: 15px;
-            outline: none;
-            color: var(--ios-secondary-text);
-            background: transparent;
-        }
-
-        .add-btn {
+        .submit-btn {
             background-color: var(--ios-accent-color);
             color: white;
             border: none;
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            font-size: 24px;
-            cursor: pointer;
+            margin-left: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
             flex-shrink: 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        /* --- ВСПЛЫВАЮЩЕЕ ОКНО ЛОРА (ШТОРКА iOS) --- */
+        /* ШТОРКА (Модальное окно общая) */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -314,20 +306,17 @@
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-        
         .modal-overlay.active { opacity: 1; }
 
         .modal-content {
             background: var(--ios-bg-color);
             width: 100%;
-            height: 85vh; /* Высота шторки */
             border-radius: 20px 20px 0 0;
             display: flex;
             flex-direction: column;
             transform: translateY(100%);
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1);
         }
-        
         .modal-overlay.active .modal-content { transform: translateY(0); }
 
         .modal-header {
@@ -357,12 +346,39 @@
             -webkit-overflow-scrolling: touch;
         }
         
+        /* Сетка Категорий (как на референсе) */
+        .category-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .cat-btn {
+            background: var(--ios-card-bg);
+            border: 1px solid var(--ios-separator-color);
+            border-radius: 12px;
+            padding: 14px 12px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            transition: background 0.2s;
+        }
+        
+        .cat-btn:active { background: var(--ios-filter-bg); }
+
+        .cat-dot {
+            width: 12px; height: 12px; border-radius: 50%; margin-right: 10px; flex-shrink: 0;
+        }
+
+        /* Анимация повышения уровня */
         @keyframes levelUpPulse {
             0% { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0.7); }
             70% { box-shadow: 0 0 0 20px rgba(255, 204, 0, 0); }
             100% { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0); }
         }
-
         .level-up-animation { animation: levelUpPulse 1s ease-out; }
 
     </style>
@@ -371,9 +387,7 @@
 
     <header class="header">
         <a href="#" class="header-btn back">
-            <svg width="12" height="20" viewBox="0 0 12 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M11.2109 1.28906L2.5 10L11.2109 18.7109L9.78906 20.1328L0.355469 10.7109L1.06641 10L0.355469 9.28906L9.78906 -0.132812L11.2109 1.28906Z" fill="currentColor"/>
-            </svg>
+            <svg width="12" height="20" viewBox="0 0 12 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.2109 1.28906L2.5 10L11.2109 18.7109L9.78906 20.1328L0.355469 10.7109L1.06641 10L0.355469 9.28906L9.78906 -0.132812L11.2109 1.28906Z" fill="currentColor"/></svg>
             Назад
         </a>
         <span class="header-title">Мои Квесты</span>
@@ -412,37 +426,55 @@
     </main>
 
     <footer class="add-quest-form">
-        <button class="add-btn" id="addBtn">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M10 1V19M1 10H19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+        <input type="text" id="questInput" class="add-input-permanent" placeholder="Название квеста...">
+        <button class="submit-btn" id="submitBtn" onclick="initiateAddQuest()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
         </button>
-        
-        <div class="add-controls" id="addControls">
-            <input type="text" id="questInput" class="add-input" placeholder="Новый квест...">
-            <select id="categoryInput" class="category-select">
-                <option value="Быт">Быт</option>
-                <option value="Покупки">Покупки</option>
-                <option value="Обучение">Обучение</option>
-                <option value="Спорт">Спорт</option>
-                <option value="Творчество">Творчество</option>
-                <option value="Экстрим">Экстрим</option>
-                <option value="Детские мечты">Детские мечты</option>
-            </select>
-            <input type="number" id="xpInput" class="add-xp-input" placeholder="XP" min="1" value="50">
-        </div>
     </footer>
 
+    <div class="modal-overlay" id="categoryModal">
+        <div class="modal-content" style="height: auto; padding-bottom: 20px;">
+            <div class="modal-header">
+                <span class="modal-title">Выберите категорию</span>
+                <button class="close-modal" onclick="closeCategoryModal()">Отмена</button>
+            </div>
+            <div class="modal-body">
+                <div class="category-grid">
+                    <button class="cat-btn" onclick="finalizeAddQuest('Быт')">
+                        <span class="cat-dot" style="background: #8E8E93;"></span> Быт
+                    </button>
+                    <button class="cat-btn" onclick="finalizeAddQuest('Покупки')">
+                        <span class="cat-dot" style="background: #007AFF;"></span> Покупки
+                    </button>
+                    <button class="cat-btn" onclick="finalizeAddQuest('Обучение')">
+                        <span class="cat-dot" style="background: #FF2D55;"></span> Обучение
+                    </button>
+                    <button class="cat-btn" onclick="finalizeAddQuest('Спорт')">
+                        <span class="cat-dot" style="background: #34C759;"></span> Спорт
+                    </button>
+                    <button class="cat-btn" onclick="finalizeAddQuest('Творчество')">
+                        <span class="cat-dot" style="background: #FF9500;"></span> Творчество
+                    </button>
+                    <button class="cat-btn" onclick="finalizeAddQuest('Экстрим')">
+                        <span class="cat-dot" style="background: #AF52DE;"></span> Экстрим
+                    </button>
+                    <button class="cat-btn" style="grid-column: 1 / -1;" onclick="finalizeAddQuest('Детские мечты')">
+                        <span class="cat-dot" style="background: #5AC8FA;"></span> Детские мечты
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="loreModal">
-        <div class="modal-content">
+        <div class="modal-content" style="height: 85vh;">
             <div class="modal-header">
                 <span class="modal-title">Мой Лор</span>
                 <button class="close-modal" onclick="closeLore()">Готово</button>
             </div>
             <div class="modal-body">
                 <div class="notes-container">
-                    <ul class="quest-list" id="loreList">
-                        </ul>
+                    <ul class="quest-list" id="loreList"></ul>
                 </div>
             </div>
         </div>
@@ -459,36 +491,28 @@
             'Детские мечты': 500
         };
 
-        const initialQuests = [
-            { id: 1, text: 'Помыть Polo', xp: 50, category: 'Быт', completed: false },
-            { id: 2, text: 'Купить новый сорт бабл-ти', xp: 50, category: 'Покупки', completed: false },
-            { id: 3, text: 'Дописать скрипт по истории мужского костюма', xp: 150, category: 'Обучение', completed: false },
-            { id: 4, text: 'Сделать силовую на набор массы', xp: 150, category: 'Спорт', completed: false },
-            { id: 5, text: 'Придумать концепт упаковки для MAUF', xp: 200, category: 'Творчество', completed: false },
-            { id: 6, text: 'Записаться на прыжок с парашютом', xp: 300, category: 'Экстрим', completed: false },
-            { id: 7, text: 'Попасть на концерт Канье Уэста', xp: 500, category: 'Детские мечты', completed: false }
-        ];
+        // Временное хранилище текста квеста до выбора категории
+        let draftQuestText = "";
 
         let state = {
             level: 1,
             xp: 0,
             xpMax: 100,
-            quests: [],
+            quests: [], // Теперь список абсолютно пуст на старте
             activeFilter: 'Все'
         };
 
         function loadState() {
-            const savedState = localStorage.getItem('questAppStateV4');
+            // Версия V5, чтобы сбросить старые данные и начать с чистого листа
+            const savedState = localStorage.getItem('questAppStateV5');
             if (savedState) {
                 state = JSON.parse(savedState);
-            } else {
-                state.quests = initialQuests; 
             }
             render();
         }
 
         function saveState() {
-            localStorage.setItem('questAppStateV4', JSON.stringify(state));
+            localStorage.setItem('questAppStateV5', JSON.stringify(state));
         }
 
         function setFilter(category) {
@@ -501,19 +525,43 @@
             render();
         }
 
-        function addQuest(text, xp, category) {
-            if (!text) return;
-            state.quests.push({
-                id: Date.now(),
-                text: text,
-                xp: parseInt(xp) || 50,
-                category: category || 'Быт',
-                completed: false
-            });
-            saveState();
-            render();
+        // --- ЛОГИКА ДОБАВЛЕНИЯ КВЕСТА ---
+        function initiateAddQuest() {
+            const input = document.getElementById('questInput');
+            if (!input.value.trim()) return;
+            
+            draftQuestText = input.value.trim();
+            input.blur(); // Убираем клавиатуру
+            
+            // Открываем модалку выбора категории
+            const modal = document.getElementById('categoryModal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 10);
         }
 
+        function finalizeAddQuest(category) {
+            state.quests.push({
+                id: Date.now(),
+                text: draftQuestText,
+                xp: xpMap[category],
+                category: category,
+                completed: false
+            });
+            
+            saveState();
+            render();
+            closeCategoryModal();
+            document.getElementById('questInput').value = ''; // Очищаем поле
+            draftQuestText = '';
+        }
+
+        function closeCategoryModal() {
+            const modal = document.getElementById('categoryModal');
+            modal.classList.remove('active');
+            setTimeout(() => modal.style.display = 'none', 300);
+        }
+
+        // --- ЛОГИКА ВЫПОЛНЕНИЯ И УДАЛЕНИЯ ---
         function toggleQuest(id) {
             const quest = state.quests.find(q => q.id === id);
             if (quest) {
@@ -523,20 +571,42 @@
                     checkLevelUp();
                 } else {
                     state.xp -= quest.xp;
-                    if (state.xp < 0 && state.level > 1) {
-                         state.level--;
-                         state.xpMax = state.level * 100;
-                         state.xp = state.xpMax + state.xp;
-                    } else if (state.xp < 0) {
-                        state.xp = 0;
-                    }
+                    recalculateLevelDown();
                 }
                 saveState();
                 render();
-                // Если лор открыт, обновляем и его
-                if (document.getElementById('loreModal').classList.contains('active')) {
-                    renderLore();
+                if (document.getElementById('loreModal').classList.contains('active')) renderLore();
+            }
+        }
+
+        function deleteQuest(id, event) {
+            event.stopPropagation(); // Чтобы при клике на крестик не нажималась галочка выполнения
+            
+            const questIndex = state.quests.findIndex(q => q.id === id);
+            if (questIndex > -1) {
+                const quest = state.quests[questIndex];
+                
+                // Если квест был выполнен, отбираем XP обратно
+                if (quest.completed) {
+                    state.xp -= quest.xp;
+                    recalculateLevelDown();
                 }
+                
+                state.quests.splice(questIndex, 1);
+                saveState();
+                render();
+                if (document.getElementById('loreModal').classList.contains('active')) renderLore();
+            }
+        }
+
+        function recalculateLevelDown() {
+            if (state.xp < 0) {
+                while (state.xp < 0 && state.level > 1) {
+                    state.level--;
+                    state.xpMax = state.level * 100;
+                    state.xp += state.xpMax;
+                }
+                if (state.xp < 0) state.xp = 0;
             }
         }
 
@@ -568,11 +638,10 @@
                 filteredQuests = state.quests.filter(q => q.category === state.activeFilter);
             }
 
-            // Оставляем выполненные квесты в общем списке, но опускаем их вниз
             const sortedQuests = [...filteredQuests].sort((a, b) => a.completed - b.completed);
 
             if (sortedQuests.length === 0) {
-                 questList.innerHTML = '<li style="padding: 16px; text-align: center; color: var(--ios-secondary-text);">Тут пока пусто.</li>';
+                 questList.innerHTML = '<li style="padding: 16px; text-align: center; color: var(--ios-secondary-text);">Тут пока пусто. Напиши квест внизу!</li>';
             }
 
             sortedQuests.forEach(quest => {
@@ -583,9 +652,7 @@
 
                 li.innerHTML = `
                     <div class="quest-checkbox" onclick="toggleQuest(${quest.id})">
-                         <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M1 5L5 9L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
+                         <svg width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 5L5 9L13 1"/></svg>
                     </div>
                     <div class="quest-content" onclick="toggleQuest(${quest.id})">
                         <span class="quest-text">${quest.text}</span>
@@ -594,17 +661,19 @@
                             <span class="quest-xp">${quest.xp} XP</span>
                         </div>
                     </div>
+                    <button class="delete-btn" onclick="deleteQuest(${quest.id}, event)">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
                 `;
                 questList.appendChild(li);
             });
         }
 
-        // Логика для Лора
+        // --- ЛОР ---
         function renderLore() {
             const loreList = document.getElementById('loreList');
             loreList.innerHTML = '';
             
-            // Фильтруем только выполненные, сортируем от новых к старым
             const completedQuests = state.quests.filter(q => q.completed).reverse();
             
             if (completedQuests.length === 0) {
@@ -617,9 +686,7 @@
                 li.className = `quest-item completed`;
                 li.innerHTML = `
                     <div class="quest-checkbox" onclick="toggleQuest(${quest.id})">
-                         <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M1 5L5 9L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
+                         <svg width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 5L5 9L13 1"/></svg>
                     </div>
                     <div class="quest-content" onclick="toggleQuest(${quest.id})">
                         <span class="quest-text" style="color: var(--ios-text-color); text-decoration: none;">${quest.text}</span>
@@ -649,44 +716,11 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadState(); 
 
-            const addBtn = document.getElementById('addBtn');
-            const addControls = document.getElementById('addControls');
             const questInput = document.getElementById('questInput');
-            const xpInput = document.getElementById('xpInput');
-            const categoryInput = document.getElementById('categoryInput');
-
-            categoryInput.addEventListener('change', (e) => {
-                xpInput.value = xpMap[e.target.value] || 50;
-            });
-
-            addBtn.addEventListener('click', () => {
-                if (addControls.style.display === 'flex') {
-                    addQuest(questInput.value, xpInput.value, categoryInput.value);
-                    questInput.value = '';
-                    xpInput.value = xpMap[categoryInput.value] || 50;
-                    addControls.style.display = 'none';
-                    addBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 1V19M1 10H19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-                } else {
-                    addControls.style.display = 'flex';
-                    if(state.activeFilter !== 'Все') {
-                        categoryInput.value = state.activeFilter;
-                        xpInput.value = xpMap[state.activeFilter] || 50;
-                    } else {
-                        xpInput.value = xpMap[categoryInput.value] || 50;
-                    }
-                    questInput.focus();
-                    addBtn.innerHTML = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 10L8 13L15 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-                }
-            });
-
             questInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') addBtn.click(); 
-            });
-            xpInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') addBtn.click(); 
+                if (e.key === 'Enter') initiateAddQuest(); 
             });
         });
-
     </script>
 </body>
 </html>
