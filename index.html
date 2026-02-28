@@ -3,14 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Квесты">
-    <meta name="theme-color" content="#F2F2F7">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <link rel="manifest" href="manifest.json">
-    <title>Мои Квесты</title>
+    <title>Мои Квесты (Заметки)</title>
     <style>
+        /* Общие стили в духе iOS */
         :root {
             --ios-bg-color: #F2F2F7;
             --ios-card-bg: #FFFFFF;
@@ -20,10 +15,6 @@
             --ios-separator-color: #C6C6C8;
             --ios-filter-bg: #E5E5EA;
             --ios-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        * {
-            box-sizing: border-box;
         }
 
         body {
@@ -41,7 +32,6 @@
         .header {
             background-color: rgba(242, 242, 247, 0.8);
             padding: 10px 16px;
-            padding-top: max(10px, env(safe-area-inset-top));
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -57,9 +47,6 @@
             text-decoration: none;
             display: flex;
             align-items: center;
-            background: none;
-            border: none;
-            cursor: pointer;
         }
         
         .header-btn.back svg { margin-right: 4px; }
@@ -75,17 +62,36 @@
             flex: 1;
             overflow-y: auto;
             padding: 16px;
+            padding-bottom: 100px; /* Отступ снизу, чтобы форма не перекрывала квесты */
             -webkit-overflow-scrolling: touch; 
         }
 
-        .level-block {
-            margin-bottom: 16px;
+        /* Блок уровня с кнопкой Лор */
+        .level-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 4px;
         }
         
         .level-title {
             font-size: 34px;
             font-weight: 700;
-            margin-bottom: 4px;
+            line-height: 1;
+        }
+
+        .lore-btn {
+            color: var(--ios-accent-color);
+            background: none;
+            border: none;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 0 0 4px 0;
+        }
+
+        .level-block {
+            margin-bottom: 16px;
         }
 
         .level-progress-info {
@@ -181,11 +187,7 @@
             border-color: var(--ios-accent-color);
         }
         
-        .quest-checkbox svg {
-            display: none;
-            color: white;
-        }
-
+        .quest-checkbox svg { display: none; color: white; }
         .quest-item.completed .quest-checkbox svg { display: block; }
 
         .quest-content {
@@ -193,7 +195,6 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            cursor: pointer;
         }
 
         .quest-text {
@@ -227,15 +228,22 @@
             font-weight: 500;
         }
 
+        /* ИСПРАВЛЕННАЯ ФОРМА ДОБАВЛЕНИЯ */
         .add-quest-form {
-            background-color: rgba(242, 242, 247, 0.9);
+            background-color: rgba(242, 242, 247, 0.95);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             padding: 12px 16px;
+            /* Поднял форму выше, чтобы не конфликтовала с полоской айфона */
+            padding-bottom: calc(24px + env(safe-area-inset-bottom)); 
             display: flex;
             align-items: center;
             border-top: 0.5px solid var(--ios-separator-color);
-            padding-bottom: max(12px, env(safe-area-inset-bottom)); 
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
         }
 
         .add-controls {
@@ -248,7 +256,7 @@
         .add-input {
             flex-grow: 1;
             border: none;
-            font-size: 17px;
+            font-size: 17px; /* 16px+ предотвращает автозум на iOS */
             outline: none;
             background: transparent; 
         }
@@ -280,8 +288,8 @@
             background-color: var(--ios-accent-color);
             color: white;
             border: none;
-            width: 30px;
-            height: 30px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             font-size: 24px;
             cursor: pointer;
@@ -289,6 +297,64 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* --- ВСПЛЫВАЮЩЕЕ ОКНО ЛОРА (ШТОРКА iOS) --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 100;
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            justify-content: center;
+            align-items: flex-end;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-overlay.active { opacity: 1; }
+
+        .modal-content {
+            background: var(--ios-bg-color);
+            width: 100%;
+            height: 85vh; /* Высота шторки */
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1);
+        }
+        
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+
+        .modal-header {
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--ios-separator-color);
+            background: var(--ios-card-bg);
+            border-radius: 20px 20px 0 0;
+        }
+
+        .modal-title { font-weight: 600; font-size: 17px; }
+        .close-modal { 
+            color: var(--ios-accent-color); 
+            background: none; 
+            border: none; 
+            font-size: 17px; 
+            font-weight: 500;
+            cursor: pointer; 
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            -webkit-overflow-scrolling: touch;
         }
         
         @keyframes levelUpPulse {
@@ -299,34 +365,27 @@
 
         .level-up-animation { animation: levelUpPulse 1s ease-out; }
 
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--ios-secondary-text);
-        }
-
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 12px;
-        }
     </style>
 </head>
 <body>
 
     <header class="header">
-        <span class="header-btn back" style="visibility: hidden;">
+        <a href="#" class="header-btn back">
             <svg width="12" height="20" viewBox="0 0 12 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M11.2109 1.28906L2.5 10L11.2109 18.7109L9.78906 20.1328L0.355469 10.7109L1.06641 10L0.355469 9.28906L9.78906 -0.132812L11.2109 1.28906Z" fill="currentColor"/>
             </svg>
             Назад
-        </span>
+        </a>
         <span class="header-title">Мои Квесты</span>
-        <span class="header-btn" style="visibility: hidden;">Готово</span>
+        <a href="#" class="header-btn">Готово</a>
     </header>
 
     <main class="content">
         <div class="level-block" id="levelBlock">
-            <div class="level-title">Уровень <span id="levelValue">1</span></div>
+            <div class="level-header">
+                <div class="level-title">Уровень <span id="levelValue">1</span></div>
+                <button class="lore-btn" onclick="openLore()">Лор</button>
+            </div>
             <div class="level-progress-info">
                 <span>XP: <span id="xpValue">0</span> / <span id="xpMax">100</span></span>
             </div>
@@ -347,7 +406,8 @@
         </div>
 
         <div class="notes-container">
-            <ul class="quest-list" id="questList"></ul>
+            <ul class="quest-list" id="questList">
+                </ul>
         </div>
     </main>
 
@@ -372,6 +432,21 @@
             <input type="number" id="xpInput" class="add-xp-input" placeholder="XP" min="1" value="50">
         </div>
     </footer>
+
+    <div class="modal-overlay" id="loreModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">Мой Лор</span>
+                <button class="close-modal" onclick="closeLore()">Готово</button>
+            </div>
+            <div class="modal-body">
+                <div class="notes-container">
+                    <ul class="quest-list" id="loreList">
+                        </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         const xpMap = {
@@ -403,7 +478,7 @@
         };
 
         function loadState() {
-            const savedState = localStorage.getItem('questAppStateV3');
+            const savedState = localStorage.getItem('questAppStateV4');
             if (savedState) {
                 state = JSON.parse(savedState);
             } else {
@@ -413,18 +488,16 @@
         }
 
         function saveState() {
-            localStorage.setItem('questAppStateV3', JSON.stringify(state));
+            localStorage.setItem('questAppStateV4', JSON.stringify(state));
         }
 
         function setFilter(category) {
             state.activeFilter = category;
-            
             const buttons = document.querySelectorAll('.filter-pill');
             buttons.forEach(btn => {
                 if(btn.textContent === category) btn.classList.add('active');
                 else btn.classList.remove('active');
             });
-            
             render();
         }
 
@@ -460,6 +533,10 @@
                 }
                 saveState();
                 render();
+                // Если лор открыт, обновляем и его
+                if (document.getElementById('loreModal').classList.contains('active')) {
+                    renderLore();
+                }
             }
         }
 
@@ -491,17 +568,12 @@
                 filteredQuests = state.quests.filter(q => q.category === state.activeFilter);
             }
 
-            if (filteredQuests.length === 0) {
-                questList.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🎯</div>
-                        <div>Нет квестов</div>
-                    </div>
-                `;
-                return;
-            }
-
+            // Оставляем выполненные квесты в общем списке, но опускаем их вниз
             const sortedQuests = [...filteredQuests].sort((a, b) => a.completed - b.completed);
+
+            if (sortedQuests.length === 0) {
+                 questList.innerHTML = '<li style="padding: 16px; text-align: center; color: var(--ios-secondary-text);">Тут пока пусто.</li>';
+            }
 
             sortedQuests.forEach(quest => {
                 const li = document.createElement('li');
@@ -525,6 +597,53 @@
                 `;
                 questList.appendChild(li);
             });
+        }
+
+        // Логика для Лора
+        function renderLore() {
+            const loreList = document.getElementById('loreList');
+            loreList.innerHTML = '';
+            
+            // Фильтруем только выполненные, сортируем от новых к старым
+            const completedQuests = state.quests.filter(q => q.completed).reverse();
+            
+            if (completedQuests.length === 0) {
+                loreList.innerHTML = '<li style="padding: 16px; text-align: center; color: var(--ios-secondary-text);">Пока нет пройденных квестов. Время творить историю!</li>';
+                return;
+            }
+
+            completedQuests.forEach(quest => {
+                const li = document.createElement('li');
+                li.className = `quest-item completed`;
+                li.innerHTML = `
+                    <div class="quest-checkbox" onclick="toggleQuest(${quest.id})">
+                         <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 5L5 9L13 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="quest-content" onclick="toggleQuest(${quest.id})">
+                        <span class="quest-text" style="color: var(--ios-text-color); text-decoration: none;">${quest.text}</span>
+                        <div class="quest-meta">
+                            <span class="quest-category-label">${quest.category}</span>
+                            <span class="quest-xp">+${quest.xp} XP</span>
+                        </div>
+                    </div>
+                `;
+                loreList.appendChild(li);
+            });
+        }
+
+        function openLore() {
+            const modal = document.getElementById('loreModal');
+            renderLore();
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+
+        function closeLore() {
+            const modal = document.getElementById('loreModal');
+            modal.classList.remove('active');
+            setTimeout(() => modal.style.display = 'none', 300);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -567,6 +686,7 @@
                 if (e.key === 'Enter') addBtn.click(); 
             });
         });
+
     </script>
 </body>
 </html>
