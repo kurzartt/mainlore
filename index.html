@@ -18,14 +18,17 @@
             --ios-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
-        body {
+        /* ГЛАВНЫЙ ФИКС ДЛЯ iOS SAFARI */
+        html, body {
             font-family: var(--ios-font-family);
             background-color: var(--ios-bg-color);
             color: var(--ios-text-color);
             margin: 0;
             padding: 0;
+            height: 100dvh; /* Динамическая высота (учитывает клавиатуру) */
+            width: 100vw;
             overflow: hidden; 
-            height: 100vh;
+            position: fixed; /* Намертво прибивает страницу, не давая ей уехать вверх */
             display: flex;
             flex-direction: column;
         }
@@ -40,6 +43,7 @@
             backdrop-filter: blur(20px); 
             -webkit-backdrop-filter: blur(20px);
             z-index: 10;
+            flex-shrink: 0;
         }
 
         .header-btn {
@@ -231,7 +235,6 @@
             font-weight: 500;
         }
 
-        /* Кнопка удаления */
         .delete-btn {
             background: none;
             border: none;
@@ -249,7 +252,6 @@
             color: var(--ios-red);
         }
 
-        /* НОВАЯ ФОРМА ДОБАВЛЕНИЯ (Минимализм) */
         .add-quest-form {
             background-color: rgba(242, 242, 247, 0.95);
             backdrop-filter: blur(20px);
@@ -259,7 +261,7 @@
             display: flex;
             align-items: center;
             border-top: 0.5px solid var(--ios-separator-color);
-            position: fixed;
+            position: absolute; /* Привязка к низу экрана */
             bottom: 0;
             left: 0;
             right: 0;
@@ -292,7 +294,7 @@
             flex-shrink: 0;
         }
 
-        /* ШТОРКА (Модальное окно общая) */
+        /* --- ШТОРКА (Модальное окно) --- */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -329,7 +331,7 @@
             border-radius: 20px 20px 0 0;
         }
 
-        .modal-title { font-weight: 600; font-size: 17px; }
+        .modal-title { font-weight: 600; font-size: 15px; color: var(--ios-secondary-text); letter-spacing: 1px; text-transform: uppercase;}
         .close-modal { 
             color: var(--ios-accent-color); 
             background: none; 
@@ -346,7 +348,7 @@
             -webkit-overflow-scrolling: touch;
         }
         
-        /* Сетка Категорий (как на референсе) */
+        /* --- СЕТКА КАТЕГОРИЙ (ИЗ ТВОЕГО РЕФЕРЕНСА) --- */
         .category-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -356,24 +358,24 @@
 
         .cat-btn {
             background: var(--ios-card-bg);
-            border: 1px solid var(--ios-separator-color);
+            border: 1px solid #E5E5EA; /* Тонкая серая обводка */
             border-radius: 12px;
             padding: 14px 12px;
             font-size: 16px;
+            color: var(--ios-text-color);
             display: flex;
             align-items: center;
             cursor: pointer;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            box-shadow: none;
             transition: background 0.2s;
         }
         
         .cat-btn:active { background: var(--ios-filter-bg); }
 
         .cat-dot {
-            width: 12px; height: 12px; border-radius: 50%; margin-right: 10px; flex-shrink: 0;
+            width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; flex-shrink: 0;
         }
 
-        /* Анимация повышения уровня */
         @keyframes levelUpPulse {
             0% { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0.7); }
             70% { box-shadow: 0 0 0 20px rgba(255, 204, 0, 0); }
@@ -420,8 +422,7 @@
         </div>
 
         <div class="notes-container">
-            <ul class="quest-list" id="questList">
-                </ul>
+            <ul class="quest-list" id="questList"></ul>
         </div>
     </main>
 
@@ -435,7 +436,7 @@
     <div class="modal-overlay" id="categoryModal">
         <div class="modal-content" style="height: auto; padding-bottom: 20px;">
             <div class="modal-header">
-                <span class="modal-title">Выберите категорию</span>
+                <span class="modal-title">Категория</span>
                 <button class="close-modal" onclick="closeCategoryModal()">Отмена</button>
             </div>
             <div class="modal-body">
@@ -453,7 +454,7 @@
                         <span class="cat-dot" style="background: #34C759;"></span> Спорт
                     </button>
                     <button class="cat-btn" onclick="finalizeAddQuest('Творчество')">
-                        <span class="cat-dot" style="background: #FF9500;"></span> Творчество
+                        <span class="cat-dot" style="background: #FFCC00;"></span> Творчество
                     </button>
                     <button class="cat-btn" onclick="finalizeAddQuest('Экстрим')">
                         <span class="cat-dot" style="background: #AF52DE;"></span> Экстрим
@@ -491,19 +492,17 @@
             'Детские мечты': 500
         };
 
-        // Временное хранилище текста квеста до выбора категории
         let draftQuestText = "";
 
         let state = {
             level: 1,
             xp: 0,
             xpMax: 100,
-            quests: [], // Теперь список абсолютно пуст на старте
+            quests: [], 
             activeFilter: 'Все'
         };
 
         function loadState() {
-            // Версия V5, чтобы сбросить старые данные и начать с чистого листа
             const savedState = localStorage.getItem('questAppStateV5');
             if (savedState) {
                 state = JSON.parse(savedState);
@@ -525,15 +524,19 @@
             render();
         }
 
-        // --- ЛОГИКА ДОБАВЛЕНИЯ КВЕСТА ---
         function initiateAddQuest() {
             const input = document.getElementById('questInput');
             if (!input.value.trim()) return;
             
             draftQuestText = input.value.trim();
-            input.blur(); // Убираем клавиатуру
+            input.blur(); // Скрываем клавиатуру
             
-            // Открываем модалку выбора категории
+            // ФИКС: Принудительно скроллим iOS обратно вниз
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+                document.body.scrollTop = 0;
+            }, 50);
+
             const modal = document.getElementById('categoryModal');
             modal.style.display = 'flex';
             setTimeout(() => modal.classList.add('active'), 10);
@@ -551,17 +554,19 @@
             saveState();
             render();
             closeCategoryModal();
-            document.getElementById('questInput').value = ''; // Очищаем поле
+            document.getElementById('questInput').value = ''; 
             draftQuestText = '';
         }
 
         function closeCategoryModal() {
             const modal = document.getElementById('categoryModal');
             modal.classList.remove('active');
-            setTimeout(() => modal.style.display = 'none', 300);
+            setTimeout(() => {
+                modal.style.display = 'none';
+                window.scrollTo(0, 0); // Еще раз страхуем скролл
+            }, 300);
         }
 
-        // --- ЛОГИКА ВЫПОЛНЕНИЯ И УДАЛЕНИЯ ---
         function toggleQuest(id) {
             const quest = state.quests.find(q => q.id === id);
             if (quest) {
@@ -580,13 +585,12 @@
         }
 
         function deleteQuest(id, event) {
-            event.stopPropagation(); // Чтобы при клике на крестик не нажималась галочка выполнения
+            event.stopPropagation(); 
             
             const questIndex = state.quests.findIndex(q => q.id === id);
             if (questIndex > -1) {
                 const quest = state.quests[questIndex];
                 
-                // Если квест был выполнен, отбираем XP обратно
                 if (quest.completed) {
                     state.xp -= quest.xp;
                     recalculateLevelDown();
@@ -669,7 +673,6 @@
             });
         }
 
-        // --- ЛОР ---
         function renderLore() {
             const loreList = document.getElementById('loreList');
             loreList.innerHTML = '';
@@ -720,6 +723,11 @@
             questInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') initiateAddQuest(); 
             });
+            
+            // Фикс на случай, если пользователь тапнул мимо модалки, чтобы скрыть клаву
+            document.body.addEventListener('touchstart', () => {
+                window.scrollTo(0, 0);
+            }, { passive: true });
         });
     </script>
 </body>
